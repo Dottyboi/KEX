@@ -1,50 +1,24 @@
-import re, os
+# STEP 1: Import the necessary modules.
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+import cv2
+from google.colab.patches import cv2_imshow
 
-def extract_signs(sign_dict : dict, filepath : str):
-    annotation_start = re.compile('.*<ALIGNABLE_ANNOTATION ANNOTATION_ID=".*"$')
+img = cv2.imread("image.jpg")
+cv2_imshow(img)
+# STEP 2: Create an HandLandmarker object.
+base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+options = vision.HandLandmarkerOptions(base_options=base_options,
+                                       num_hands=2)
+detector = vision.HandLandmarker.create_from_options(options)
 
-    with open(filepath, "r+", encoding="UTF-8") as file:
-        for row in file:
-            if annotation_start.match(row):
-                annotation = row.split('"')[1]
-                row1 = next(file)
-                time = re.compile(".*TIME_SLOT")
-                if not time.match(row1):
-                    row1 = next(file)
-                times = row1.split('"')
-                start = times[1]
-                end = times[3]
-                row2 = next(file)
-                try:
-                    sign = re.findall(">.*<", row2)[0][1:-1]
-                except IndexError:
-                    row3 = next(file)
-                    sign = re.findall(">.*<", row2[:-1]+row3)[0][1:-1]
-                
-                if " " in sign or "^" in sign or "#" in sign:
-                    continue
+# STEP 3: Load the input image.
+image = mp.Image.create_from_file("image.jpg")
 
-                if sign in sign_dict.keys():
-                    sign_dict[sign].append((annotation, start, end))
-                else:
-                    sign_dict[sign] = [(filepath, annotation, start, end)]
+# STEP 4: Detect hand landmarks from the input image.
+detection_result = detector.detect(image)
 
-def main():
-    sign_dict = dict()
-    for i in range(1, 409):
-        filepath = f"SSLC\Eaf files annotations 20231220\SSLC01_{i:03}.eaf"
-        if os.path.exists(filepath):
-            extract_signs(sign_dict, filepath)
-            print(f"{i}/408 filer klara")
-    l = list()
-    for key in sign_dict.keys():
-        l.append(key)
-    l.sort(key= lambda key : len(sign_dict[key]))
-
-    for key in l:
-        print(f"{key}: {len(sign_dict[key])}")
-        
-
-
-if __name__ == "__main__":
-    main()
+# STEP 5: Process the classification result. In this case, visualize it.
+annotated_image = draw_landmarks_on_image(image.numpy_view(), detection_result)
+cv2_imshow(cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
