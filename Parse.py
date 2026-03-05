@@ -140,7 +140,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 def main() -> None:
     sign_dict = dict()
 
-    files = map(lambda x : "SSLC\\Eaf files annotations 20231220\\" + x ,os.listdir("SSLC\\Eaf files annotations 20231220"))
+    files = map(lambda x : "SSLC/Eaf files annotations 20231220/" + x ,os.listdir("SSLC/Eaf files annotations 20231220"))
     
     for filepath in files:
         if filepath[-3:] != "eaf":
