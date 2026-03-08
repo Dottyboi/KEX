@@ -1,13 +1,10 @@
 import os, re
 import xml.etree.ElementTree as ET
+import ffmpeg
 
 
-# TODO: Fixa datastrukturen så att det blir trädliknande
-# TODO: Hitta ett sätt att göra träningen oberoende av höger- eller vänsterhänt tecknande
-# TODO: Fråga Jonas om uppdelningen i signgrejen
-# TODO: Fråga Jonas om 
 
-class SignNode:
+class SignNode: # not used
     def __init__(self, sign: str, special : str = "") -> None:
         self.sign = sign
         self.special = special
@@ -15,7 +12,7 @@ class SignNode:
 
 
 
-class SignTree:
+class SignTree: # not used
     def __init__(self, dictionary: dict[str, SignNode]):
         if not dictionary:
             self.__dict : dict[str, SignNode] = dict()
@@ -36,7 +33,7 @@ class SignTree:
         return self.__recfind(root)
 
 class Sign:
-    def __init__(self, sign: str, start: int, end: int, filepath: str) -> None:
+    def __init__(self, sign: str, start: str, end: str, filepath: str) -> None:
         self.sign : str = sign
         self.time : tuple[int, int] = (start, end)
         self.filepath : str = filepath
@@ -63,7 +60,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
     time_order = root.find("TIME_ORDER")
     if time_order:
-        time_conversion_table = {child.attrib["TIME_SLOT_ID"] : child.attrib["TIME_VALUE"] for child in time_order}
+        time_conversion_table = {child.attrib["TIME_SLOT_ID"] : child.attrib["TIME_VALUE"]  for child in time_order}
     else:
         raise ValueError("Times not found")
     
@@ -72,15 +69,21 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
     if header == None:
         return False
 
-    videos = list(map(lambda x : f"SSLC/SSLC_videofiler_mp4{x.attrib["RELATIVE_MEDIA_URL"][1:]}", header.findall("MEDIA_DESCRIPTOR")))
+    videos = list(map(lambda x : os.path.realpath(f"{os.getcwd()}/SSLC/SSLC_videofiler_mp4{x.attrib["RELATIVE_MEDIA_URL"][1:]}"), header.findall("MEDIA_DESCRIPTOR")))
 
-    double_participant = re.compile("S[0-9]{3}_S[0-9]{3}")
+    double_participant = re.compile("S[0-9]{3}")
 
-    for index, video in enumerate(videos):
-        if double_participant.match(video):
-            videos.pop(index)
-        if not os.path.exists(video):
-            videos.pop(index)
+    remove_list = []
+
+    for video in videos:
+        
+        if len(double_participant.findall(video)) != 1:
+            remove_list.append(video)
+        elif not os.path.exists(video):
+            remove_list.append(video)
+
+    for video in remove_list:
+        videos.pop(videos.index(video))
 
     if not videos:
         return False
@@ -130,9 +133,10 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
                 for sign in signs:
                     if sign in sign_dict.keys():
-                        sign_dict[sign].append(Sign(sign, int(times[0]), int(times[1]), video_file))
+                        sign_dict[sign].append(Sign(sign, f"{int(times[0])//(1000*60*60):02}:{int(times[0])//(1000*60)%60:02}:{int(times[0])//1000%60:02}.{int(times[0])%1000//10:02}", f"{(int(times[1])+1000)//(1000*60*60):02}:{(int(times[1])+1000)//(1000*60)%60:02}:{(int(times[1])+1000)//1000%60:02}.{(int(times[1])+1000)%1000//10:02}", video_file))
                     else:
-                        sign_dict[sign] = [Sign(sign, int(times[0]), int(times[1]), video_file)]
+                        sign_dict[sign] = [Sign(sign, times[0], times[1], video_file)]
+
 
     return True
 
@@ -140,7 +144,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 def main() -> None:
     sign_dict = dict()
 
-    files = map(lambda x : "SSLC/Eaf files annotations 20231220/" + x ,os.listdir("SSLC/Eaf files annotations 20231220"))
+    files = map(lambda x : f"SSLC/Eaf files annotations 20231220/{x}" ,os.listdir(f"SSLC/Eaf files annotations 20231220"))
     
     for filepath in files:
         if filepath[-3:] != "eaf":
@@ -166,6 +170,25 @@ def main() -> None:
 
     print(f"Signs = {len(l)}")
     print(f"Video files = {count}")
+
+    for annotation in l:
+        signs = sign_dict[annotation]
+
+        for sign in signs:
+            i = 1
+
+            while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
+                i += 1
+
+
+            (
+                ffmpeg
+                .input(sign.filepath)
+                .trim(start=sign.time[0], end=sign.time[1])
+                .output(f"Sign_videos/{sign.sign}_{i}.mp4")
+                .run()
+            )
+
 
     return None
 

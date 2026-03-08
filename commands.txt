@@ -1,0 +1,1 @@
+videos_to_poses --format mediapipe --recursive --directory "directory to trimmed videos" // convert trimmed videos to pose files
