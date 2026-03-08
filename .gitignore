@@ -1,5 +1,6 @@
 /SSLC
 pyvenv.cfg
-*.pose
 example.mp4
-*.mp4
+example.pose
+test.py
+test.pose
