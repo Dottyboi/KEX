@@ -114,8 +114,8 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
                 if annotation == None:
                     continue
 
-                times = tuple(int(time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]]), 
-                         int(time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]]))
+                times = [int(time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]]), 
+                         int(time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]])]
 
                 annotation_value = annotation.find("ANNOTATION_VALUE")
 
