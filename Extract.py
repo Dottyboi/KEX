@@ -114,8 +114,8 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
                 if annotation == None:
                     continue
 
-                times = [int(time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]]), 
-                         int(time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]])]
+                times = (int(time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]]), 
+                         int(time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]]))
 
                 annotation_value = annotation.find("ANNOTATION_VALUE")
 
@@ -139,7 +139,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
                     diff = max(0, 1000 - length)//2
 
-                    node = Sign(sign, ms_to_timestamp(max(times[0]-diff, 0)), ms_to_timestamp(min(times[1]+diff)), video_file)
+                    node = Sign(sign, ms_to_timestamp(max(times[0] - diff, 0)), ms_to_timestamp(min(times[1] + diff, max(time_conversion_table.values()))), video_file)
                     if sign in sign_dict.keys():
                         sign_dict[sign].append(node)
                     else:
