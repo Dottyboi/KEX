@@ -139,7 +139,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
                     diff = max(0, 1000 - length)//2
 
-                    node = Sign(sign, ms_to_timestamp(max(times[0] - diff, 0)), ms_to_timestamp(min(times[1] + diff, max(time_conversion_table.values()))), video_file)
+                    node = Sign(sign, ms_to_timestamp(max(times[0] - diff, 0)), ms_to_timestamp(min(times[1] + diff, int(sorted(time_conversion_table.values())[-1]))), video_file)
                     if sign in sign_dict.keys():
                         sign_dict[sign].append(node)
                     else:
