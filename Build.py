@@ -5,7 +5,7 @@ def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def main():
-    with open("requirements.txt") as file:
+    with open("requirements.txt", encoding="UTF-16 LE") as file:
         for requirement in file:
             install(requirement)
 
