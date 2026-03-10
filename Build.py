@@ -9,7 +9,7 @@ def main():
         start = True
         for requirement in file:
             if start:
-                requirement = requirement[7:]
+                requirement = requirement[1:]
                 start = not start
             try:
                 install(requirement.strip())
