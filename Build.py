@@ -8,3 +8,6 @@ def main():
     with open(os.getcwd().join("/requirements.txt")) as file:
         for requirement in file:
             install(requirement)
+
+if __name__ == "__main__":
+    main()
