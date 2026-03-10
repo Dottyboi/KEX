@@ -7,7 +7,10 @@ def install(package):
 def main():
     with open("requirements.txt", encoding="UTF-16 LE") as file:
         for requirement in file:
-            install(requirement.strip())
+            try:
+                install(requirement.strip())
+            except Exception:
+                print(requirement)
 
 if __name__ == "__main__":
     main()
