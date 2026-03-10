@@ -6,6 +6,7 @@ def install(package):
 
 def main():
     with open("requirements.txt", encoding="UTF-16 LE") as file:
+        file[0] = file[0][7:]
         for requirement in file:
             try:
                 install(requirement.strip())
