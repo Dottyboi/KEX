@@ -72,7 +72,7 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
     if header == None:
         return False
 
-    videos = list(map(lambda x : os.path.realpath(f"{os.getcwd()}/SSLC/SSLC_videofiler_mp4{x.attrib["RELATIVE_MEDIA_URL"][1:]}"), header.findall("MEDIA_DESCRIPTOR")))
+    videos = list(map(lambda x : os.path.realpath(os.getcwd().join("/SSLC/SSLC_videofiler_mp4").join(x.attrib["RELATIVE_MEDIA_URL"])), header.findall("MEDIA_DESCRIPTOR")))
 
     double_participant = re.compile("S[0-9]{3}")
 
