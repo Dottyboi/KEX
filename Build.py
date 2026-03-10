@@ -6,8 +6,11 @@ def install(package):
 
 def main():
     with open("requirements.txt", encoding="UTF-16 LE") as file:
-        file[0] = file[0][7:]
+        start = True
         for requirement in file:
+            if start:
+                requirement = requirement[7:]
+                start = not start
             try:
                 install(requirement.strip())
             except Exception:
