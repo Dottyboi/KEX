@@ -54,6 +54,9 @@ class Sign:
         return self.__str__()
     
 
+def ms_to_timestamp(ms : str|int) -> str:
+    return f"{int(ms)//(1000*60*60):02}:{int(ms)//(1000*60)%60:02}:{int(ms)//1000%60:02}.{int(ms)%1000//10:02}"
+
 def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
     tree = ET.parse(filepath)
     root = tree.getroot()
@@ -111,8 +114,8 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
                 if annotation == None:
                     continue
 
-                times = (time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]], 
-                         time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]])
+                times = (int(time_conversion_table[annotation.attrib["TIME_SLOT_REF1"]]), 
+                         int(time_conversion_table[annotation.attrib["TIME_SLOT_REF2"]]))
 
                 annotation_value = annotation.find("ANNOTATION_VALUE")
 
@@ -132,10 +135,15 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
 
                 for sign in signs:
+                    length = times[1] - times[0]
+
+                    diff = max(0, 1000 - length)//2
+
+                    node = Sign(sign, ms_to_timestamp(max(times[0]-diff, 0)), ms_to_timestamp(min(times[1]+diff)), video_file)
                     if sign in sign_dict.keys():
-                        sign_dict[sign].append(Sign(sign, f"{int(times[0])//(1000*60*60):02}:{int(times[0])//(1000*60)%60:02}:{int(times[0])//1000%60:02}.{int(times[0])%1000//10:02}", f"{(int(times[1])+1000)//(1000*60*60):02}:{(int(times[1])+1000)//(1000*60)%60:02}:{(int(times[1])+1000)//1000%60:02}.{(int(times[1])+1000)%1000//10:02}", video_file))
+                        sign_dict[sign].append(node)
                     else:
-                        sign_dict[sign] = [Sign(sign, times[0], times[1], video_file)]
+                        sign_dict[sign] = [node]
 
 
     return True
