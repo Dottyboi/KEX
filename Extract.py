@@ -1,4 +1,4 @@
-import os, re
+import os, re, sys
 import xml.etree.ElementTree as ET
 import ffmpeg
 
@@ -53,6 +53,14 @@ class Sign:
     def __repr__(self) -> str:
         return self.__str__()
     
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 def ms_to_timestamp(ms : str|int) -> str:
     return f"{int(ms)//(1000*60*60):02}:{int(ms)//(1000*60)%60:02}:{int(ms)//1000%60:02}.{int(ms)%1000//10:02}"
@@ -139,7 +147,8 @@ def extract_signs(filepath: str, sign_dict : dict[str, list[Sign]]) -> bool:
 
                     diff = max(0, 1000 - length)//2
 
-                    node = Sign(sign, ms_to_timestamp(max(times[0] - diff, 0)), ms_to_timestamp(min(times[1] + diff, int(sorted(time_conversion_table.values())[-1]))), video_file)
+                    #node = Sign(sign, ms_to_timestamp(max(times[0] - diff, 0)), ms_to_timestamp(min(times[1] + diff, int(sorted(time_conversion_table.values())[-1]))), video_file)
+                    node = Sign(sign, ms_to_timestamp(times[0] - diff), ms_to_timestamp(times[1] + diff), video_file)
                     if sign in sign_dict.keys():
                         sign_dict[sign].append(node)
                     else:
@@ -188,14 +197,14 @@ def main() -> None:
             while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
                 i += 1
 
-
-            (
-                ffmpeg
-                .input(sign.filepath)
-                .trim(start=sign.time[0], end=sign.time[1])
-                .output(f"Sign_videos/{sign.sign}_{i}.mp4")
-                .run()
-            )
+            with HiddenPrints():
+                (
+                    ffmpeg
+                    .input(sign.filepath)
+                    .trim(start=sign.time[0], end=sign.time[1])
+                    .output(f"Sign_videos/{sign.sign}_{i}.mp4")
+                    .run()
+                )
 
 
     return None
