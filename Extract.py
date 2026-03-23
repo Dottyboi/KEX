@@ -35,7 +35,7 @@ class SignTree: # not used
 class Sign:
     def __init__(self, sign: str, start: str, end: str, filepath: str) -> None:
         self.sign : str = sign
-        self.time : tuple[int, int] = (start, end)
+        self.time : tuple[str, str] = (start, end)
         self.filepath : str = filepath
 
     def __eq__(self, value: object) -> bool:
@@ -197,14 +197,7 @@ def main() -> None:
             while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
                 i += 1
 
-            with HiddenPrints():
-                (
-                    ffmpeg
-                    .input(sign.filepath)
-                    .trim(start=sign.time[0], end=sign.time[1])
-                    .output(f"Sign_videos/{sign.sign}_{i}.mp4")
-                    .run()
-                )
+            ffmpeg.input(sign.filepath).trim(start=sign.time[0], end=sign.time[1]).filter('hflip').output(f"Sign_videos/{sign.sign}_{i}.mp4").run_async(pipe_stdout=False)
 
 
     return None

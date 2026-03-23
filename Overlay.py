@@ -17,6 +17,9 @@ def main() -> None:
     files = map(lambda x : f"C:\\KEX\\Sign_pose\\{x}" ,os.listdir(f"Sign_pose"))
 
     for filepath in files:
+        if os.exists(f"C:\\KEX\\Sign_overlayed\\{ffilepath[17:-5]}.mp4"):
+            continue
+        
         with open(filepath, "rb") as f:
             pose = Pose.read(f.read())
 
