@@ -311,9 +311,11 @@ def main() -> None:
         while wait_list:
             for process, sign in wait_list:
                 poll = process.poll()
-                if poll:
+
+                if not poll:
                     wait_list.pop(wait_list.index((process, sign)))
                     print(f"{sign} done!")
+
                 else:
                     print(poll)
                     print(f"Waiting on {sign}...")
