@@ -260,7 +260,7 @@ def main() -> None:
     print(f"Signs = {len(l)}")
     print(f"Video files = {count}")
 
-    procces_queue = Queue()
+    process_queue = Queue()
 
     for annotation in l:
         signs = sign_dict[annotation]
@@ -276,7 +276,7 @@ def main() -> None:
                 .output(f"Sign_videos/{sign.sign}_{i}.mp4")
             )
 
-            procces_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
+            process_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
 
             i += 1
 
@@ -288,15 +288,15 @@ def main() -> None:
                 .output(f"Sign_videos/{sign.sign}_{i}.mp4")
             )
 
-            procces_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
+            process_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
 
             i += 1
 
-    while not procces_queue.isEmpty():
+    while not process_queue.isEmpty():
         processing_list = list()
 
         for i in range(6):
-            process_sign = procces_queue.dequeue()
+            process_sign = process_queue.dequeue()
 
             if process_sign == None: continue
 
@@ -313,7 +313,8 @@ def main() -> None:
                 if process.poll():
                     wait_list.pop(wait_list.index((process, sign)))
                     print(f"{sign} done!")
-
+                else:
+                    print(f"Waiting on {sign}...")
     return None
 
 
