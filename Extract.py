@@ -280,8 +280,7 @@ def main() -> None:
 
             procces_queue.enqueue(process)
 
-            while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
-                i += 1
+            i += 1
 
             process = (
                 ffmpeg
@@ -295,6 +294,7 @@ def main() -> None:
 
     while not procces_queue.isEmpty():
         proccessing_list = list()
+
         for i in range(6):
             process = procces_queue.dequeue()
 
@@ -302,10 +302,12 @@ def main() -> None:
 
             proccessing_list.append(process)
 
-        for process in proccessing_list:
-            process.run_async(pipe_stdout=False)
+        wait_list = list()
 
         for process in proccessing_list:
+            wait_list.append(process.run_async(pipe_stdout=False))
+
+        for process in wait_list:
             process.wait()
 
     return None
