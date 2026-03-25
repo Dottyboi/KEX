@@ -308,9 +308,10 @@ def main() -> None:
             print(f"Processing {sign}...")
             wait_list.append((process.run_async(pipe_stdout=False), sign))
 
-        for process, sign in wait_list:
-            process.wait()
-            print(f"{sign} done!")
+        while wait_list:
+            for process, sign in wait_list:
+                if process.poll():
+                    print(f"{sign} done!")
 
     return None
 
