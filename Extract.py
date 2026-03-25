@@ -32,6 +32,78 @@ class SignTree: # not used
         root : SignNode = self.__findroot(value)
         return self.__recfind(root)
 
+class Node:
+    def __init__(self, value, nxt=None):
+        self.value = value
+        self.next = nxt
+
+
+class Queue:
+    def __init__(self) -> None:
+        self.__first = None
+        self.__last = None
+
+    def isEmpty(self) -> bool:
+        return not (self.__first and self.__last)
+
+    def enqueue(self, obj) -> None:
+        node = Node(obj)
+        if self.isEmpty():
+            self.__first = node
+            self.__last = node
+
+        else:
+            self.__last.next = node
+            self.__last = node
+
+    def dequeue(self):
+        if not self.__first:
+            return None
+        val = self.__first.value
+        self.__first = self.__first.next
+        if self.__first == None:
+            self.__last = None
+        return val
+
+    def remove(self, obj) -> None:
+        if self.isEmpty():
+            return None
+
+        node = self.__first
+
+        last = None
+
+        while True:
+            if node.value == obj:
+                if last:
+                    last.next = node.next
+                    if not node.next:
+                        self.__last = last
+                else:
+                    self.__first = node.next
+                break
+            if node.next:
+                last = node
+                node = node.next
+            else:
+                break
+
+    def __str__(self):
+        if self.isEmpty():
+            return "[]"
+
+        string = "["
+        node = self.__first
+
+        while True:
+            string += str(node.value)
+            if node.next:
+                string += ", "
+                node = node.next
+            else:
+                break
+        return string + "]"
+
 class Sign:
     def __init__(self, sign: str, start: str, end: str, filepath: str) -> None:
         self.sign : str = sign
@@ -188,6 +260,8 @@ def main() -> None:
     print(f"Signs = {len(l)}")
     print(f"Video files = {count}")
 
+    procces_queue = Queue()
+
     for annotation in l:
         signs = sign_dict[annotation]
 
@@ -197,8 +271,42 @@ def main() -> None:
             while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
                 i += 1
 
-            ffmpeg.input(sign.filepath).trim(start=sign.time[0], end=sign.time[1]).filter('hflip').output(f"Sign_videos/{sign.sign}_{i}.mp4").run_async(pipe_stdout=False)
+            process = (
+                ffmpeg
+                .input(sign.filepath)
+                .trim(start=sign.time[0], end=sign.time[1])
+                .output(f"Sign_videos/{sign.sign}_{i}.mp4")
+            )
 
+            procces_queue.enqueue(process)
+
+            while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
+                i += 1
+
+            process = (
+                ffmpeg
+                .input(sign.filepath)
+                .trim(start=sign.time[0], end=sign.time[1])
+                .filter('hflip')
+                .output(f"Sign_videos/{sign.sign}_{i}.mp4")
+            )
+
+            procces_queue.enqueue(process)
+
+    while not procces_queue.isEmpty():
+        proccessing_list = list()
+        for i in range(6):
+            process = procces_queue.dequeue()
+
+            if process == None: continue
+
+            proccessing_list.append(process)
+
+        for process in proccessing_list:
+            process.run_async(pipe_stdout=False)
+
+        for process in proccessing_list:
+            process.wait()
 
     return None
 

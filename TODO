@@ -1,3 +1,4 @@
 Fixa datastrukturen så att det blir trädliknande
 Spegla alla videor så man har både en högerhänt och vänsterhänt version av alla
 Gör om datastrukturen så den kopplar till videorna/posefilerna
+Call stack för video klippningen
