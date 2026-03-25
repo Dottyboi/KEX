@@ -293,24 +293,25 @@ def main() -> None:
             procces_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
 
     while not procces_queue.isEmpty():
-        proccessing_list = list()
+        processing_list = list()
 
         for i in range(6):
             process_sign = procces_queue.dequeue()
 
             if process_sign == None: continue
 
-            proccessing_list.append(process_sign)
+            processing_list.append(process_sign)
 
         wait_list = list()
 
-        for process, sign in proccessing_list:
+        for process, sign in processing_list:
             print(f"Processing {sign}...")
             wait_list.append((process.run_async(pipe_stdout=False), sign))
 
         while wait_list:
             for process, sign in wait_list:
                 if process.poll():
+                    wait_list.pop(wait_list.index((process, sign)))
                     print(f"{sign} done!")
 
     return None
