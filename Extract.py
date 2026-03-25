@@ -265,11 +265,9 @@ def main() -> None:
     for annotation in l:
         signs = sign_dict[annotation]
 
-        for sign in signs:
-            i = 1
+        i = 1
 
-            while os.path.exists(f"Sign_videos/{sign.sign}_{i}.mp4"):
-                i += 1
+        for sign in signs:
 
             process = (
                 ffmpeg
@@ -291,6 +289,8 @@ def main() -> None:
             )
 
             procces_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
+
+            i += 1
 
     while not procces_queue.isEmpty():
         processing_list = list()
