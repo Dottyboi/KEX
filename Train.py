@@ -6,4 +6,4 @@ data_buffer = open("example.pose", "rb").read()
 
 # Load data as a PyTorch tensor:
 pose = Pose.read(data_buffer, TorchPoseBody)
-print(type(pose.body))
+print(type(pose.body.data))
