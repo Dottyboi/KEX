@@ -1,8 +1,8 @@
 import torch
 from pose_format.pose import Pose
 import pose_format
-print(dir(pose_format.torch))
-from pose_format.torch import PoseBody as TorchPoseBody
+print(dir(pose_format))
+from pose_format.torch import TorchPoseBody
 
 data_buffer = open("example.pose", "rb").read()
 
