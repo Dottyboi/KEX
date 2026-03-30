@@ -292,33 +292,37 @@ def main() -> None:
 
             i += 1
 
-    while not process_queue.isEmpty():
-        processing_list = list()
+    processing_list = list()
 
-        for i in range(6):
-            process_sign = process_queue.dequeue()
+    for i in range(6):
+        process_sign = process_queue.dequeue()
 
-            if process_sign == None: continue
+        if process_sign == None: continue
 
-            processing_list.append(process_sign)
+        processing_list.append(process_sign)
 
-        wait_list = list()
+    wait_list = list()
+    
+    for process, sign in processing_list:
+        print(f"Processing {sign}...")
+        wait_list.append((process.run_async(pipe_stdout=False), sign))
 
-        for process, sign in processing_list:
-            print(f"Processing {sign}...")
-            wait_list.append((process.run_async(pipe_stdout=False), sign))
+    while wait_list:
 
-        while wait_list:
-            for process, sign in wait_list:
-                poll = process.poll()
+        for process, sign in wait_list:
+            poll = process.poll()
 
-                if not poll:
-                    wait_list.pop(wait_list.index((process, sign)))
-                    print(f"{sign} done!")
+            if not poll:
+                wait_list.pop(wait_list.index((process, sign)))
+                print(f"{sign} done!")
+                if not process_queue.isEmpty():
+                    process, sign = process_queue.dequeue()
+                    print(f"Processing {sign}...")
+                    wait_list.append((process.run_async(pipe_stdout=False), sign))
 
-                else:
-                    print(poll)
-                    print(f"Waiting on {sign}...")
+            else:
+                print(poll)
+                print(f"Waiting on {sign}...")
     return None
 
 
