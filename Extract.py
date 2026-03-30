@@ -276,19 +276,18 @@ def main() -> None:
                 .output(f"Sign_videos/{sign.sign}_{i}.mp4")
             )
 
-            process_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
+            process_queue.enqueue((process, f"{sign.sign}_{i}.mp4"))
 
-            i += 1
 
             process = (
                 ffmpeg
                 .input(sign.filepath)
                 .trim(start=sign.time[0], end=sign.time[1])
                 .filter('hflip')
-                .output(f"Sign_videos/{sign.sign}_{i}.mp4")
+                .output(f"Sign_videos/{sign.sign}_f_{i}.mp4")
             )
 
-            process_queue.enqueue((process, f"Sign_videos/{sign.sign}_{i}.mp4"))
+            process_queue.enqueue((process, f"{sign.sign}_f_{i}.mp4"))
 
             i += 1
 

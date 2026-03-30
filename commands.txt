@@ -1,3 +1,4 @@
-videos_to_poses --format mediapipe --recursive --directory "directory to trimmed videos" // convert trimmed videos to pose files
+videos_to_poses --format mediapipe --recursive --directory "directory to trimmed videos" // konverterar trimmade videor till pose-filer
 pip freeze > requirements.txt // uppdaterar requirements.txt
 pscp -i "C:\Users\fabia\.ssh\secret.ppk" -r fabianpr@130.237.67.128:"directory på redsofa1" "directory på vikverk" // Kopierar från redsofa1
+mv Sign_videos/*.pose /Sign_pose/ // flyttar alla pose-filer till rätt directory
