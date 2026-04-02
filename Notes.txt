@@ -1,0 +1,3 @@
+Graph convolutional network
+faltning på tid
+lstm - rekursiv modell
