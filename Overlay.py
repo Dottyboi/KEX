@@ -12,12 +12,10 @@ class HiddenPrints:
         sys.stdout = self._original_stdout
 
 def main() -> None:
-    sign_dict = dict()
-
     files = map(lambda x : f"C:\\KEX\\Sign_pose\\{x}" ,os.listdir(f"Sign_pose"))
 
     for filepath in files:
-        if os.exists(f"C:\\KEX\\Sign_overlayed\\{ffilepath[17:-5]}.mp4"):
+        if os.path.exists(f"C:\\KEX\\Sign_overlayed\\{filepath[17:-5]}.mp4"):
             continue
         
         with open(filepath, "rb") as f:
