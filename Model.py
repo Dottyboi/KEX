@@ -2,7 +2,7 @@
 # import torch.nn as nn
 # import torch.nn.functional as F
 
-# array shape: 25x79
+# array shape: 25x79x3
 
 
 

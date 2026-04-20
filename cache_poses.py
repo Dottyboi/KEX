@@ -25,7 +25,7 @@ import os
 
 # Reuse the same slicing constants and helper from the dataset module.
 _LEFT_HAND_SLICE = slice(501, 522)
-_RIGHT_HAND_SLICE = slice(522, 54)
+_RIGHT_HAND_SLICE = slice(522, 543)
 _UPPER_BODY_INDICES = list(range(11, 23))
 
 _FACE_MESH_OFFSET = 33
@@ -92,26 +92,19 @@ def cache_one(pose_path: Path, cache_path: Path) -> bool:
         )
         face = _masked_to_float(data_3d[:, _FACE_INDICES, :], conf_2d[:, _FACE_INDICES])
 
-        print(left_hand.shape)
-        print(right_hand.shape)
-        print(body.shape)
-        print(face.shape)
+        tot = [[] for _ in range(len(data_3d))]
 
-        tot = [[] for _ in range(25)]
-
-        for frame in range(25):
+        for frame in range(len(data_3d)):
             for point in right_hand[frame]:
-                point =  point + body[frame][5] - right_hand[frame][0] 
-                tot[frame].append([point[0], point[2]*100, -point[1]])
+                point = point + body[frame][5] - right_hand[frame][0]
+                tot[frame].append([point[0], point[2] * 100, -point[1]])
             for point in left_hand[frame]:
-                point =  point + body[frame][4] - left_hand[frame][0] 
-                tot[frame].append([point[0], point[2]*100, -point[1]])
+                point = point + body[frame][4] - left_hand[frame][0]
+                tot[frame].append([point[0], point[2] * 100, -point[1]])
             for point in body[frame]:
-                tot[frame].append([point[0], point[2]*100, -point[1]])
+                tot[frame].append([point[0], point[2] * 100, -point[1]])
             for point in face[frame]:
-                tot[frame].append([point[0], point[2]*100, -point[1]])
-
-        print(tot)
+                tot[frame].append([point[0], point[2] * 100, -point[1]])
 
         pose = np.array(tot)
 
@@ -119,6 +112,7 @@ def cache_one(pose_path: Path, cache_path: Path) -> bool:
         return True
     except Exception as e:
         print(f"  FAILED {pose_path.name}: {e}", file=sys.stderr)
+
         return False
 
 
@@ -135,15 +129,12 @@ def main():
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    pose_files = sorted(
-        map(lambda x: Path(f"C:\\KEX\\test\\pose\\{x}"), os.listdir(f"test\\pose"))
-    )
+    pose_files = sorted(args.pose_dir.iterdir())
     print(f"Found {len(pose_files)} .pose files in {args.pose_dir}")
 
     ok = skip = fail = 0
     for i, pose_path in enumerate(pose_files, 1):
         cache_path = args.cache_dir / (pose_path.name[:-5] + ".npz")
-        print(cache_path)
         if cache_path.exists() and not args.overwrite:
             skip += 1
             if i % 500 == 0:

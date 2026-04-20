@@ -12,10 +12,11 @@ class HiddenPrints:
         sys.stdout = self._original_stdout
 
 def main() -> None:
-    files = map(lambda x : f"C:\\KEX\\Sign_pose\\{x}" ,os.listdir(f"Sign_pose"))
+    files = map(lambda x : (x[:-5], f"C:\\KEX\\test\\pose\\{x}") ,os.listdir(f"C:\\KEX\\test\\pose"))
 
-    for filepath in files:
-        if os.path.exists(f"C:\\KEX\\Sign_overlayed\\{filepath[17:-5]}.mp4"):
+    for filename, filepath in files:
+        print(filename, filepath)
+        if os.path.exists(f"C:\\KEX\\Sign_overlayed\\{filename}.mp4"):
             continue
         
         with open(filepath, "rb") as f:
@@ -24,13 +25,13 @@ def main() -> None:
 
         v = PoseVisualizer(pose)
 
-        file = filepath[17:-5]
 
         # Draws pose on top of video. 
-        print(f"Now overlaying {file}")
+        print(f"Now overlaying {filename}")
+        print(f"C:\\KEX\\test\\gif\\{filename}.mp4", f"C:\\KEX\\test\\video\\{filename}.mp4")
         with HiddenPrints():
-            v.save_video(f"C:\\KEX\\Sign_overlayed\\{file}.mp4", v.draw_on_video(f"C:\\KEX\\Sign_videos\\{file}.mp4"))
-        print(f"Done overlaying {file}\n")
+            v.save_video(f"C:\\KEX\\test\\gif\\{filename}.mp4", v.draw_on_video(f"C:\\KEX\\test\\video\\{filename}.mp4"))
+        print(f"Done overlaying {filename}\n")
 
 
     return None
