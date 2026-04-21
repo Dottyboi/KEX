@@ -93,54 +93,7 @@ def update_lines(frame, line_plots, line_points):
     return line_plots
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--cache_dir", default="Sign_cache\Ã…TTA@num_1.pose.npz", type=Path
-    )
-    parser.add_argument("--gif_dir", default="./Sign_gif", type=Path)
-    args = parser.parse_args()
-
-    pose = np.load(args.cache_dir)["pose"]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(projection="3d")
-
-    i = 0
-    for x, y, z in pose[-1]:
-        ax.plot(x, y, z, "o")
-        ax.text(x, y, z, i)
-        i += 1
-
-    lines = []
-
-    for key, values in LINES.items():
-        for line in values:
-            match key:
-                case "right_hand":
-                    offset = 0
-                case "left_hand":
-                    offset = 21
-                case "body":
-                    offset = 42
-                case "face":
-                    offset = 54
-            lines.append((line[0] + offset, line[1] + offset))
-
-    print(lines)
-
-    plt.show()
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--cache_dir", default="Sign_cache\Ã…TTA@num_1.pose.npz", type=Path
-    )
-    parser.add_argument("--gif_dir", default="./Sign_gif", type=Path)
-    args = parser.parse_args()
-
-    b = np.load(args.cache_dir)["pose"]
+def plot_animated(b, args):
 
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
@@ -151,6 +104,9 @@ def main():
     line_points = []
     for frame in range(len(b)):
         line_points.append([])
+        for point in b[frame]:
+            if not point.any():
+                print(point)
         for start, stop in LINES:
             line_points[frame].append(
                 (
@@ -159,6 +115,14 @@ def main():
                     [b[frame][start][1], b[frame][stop][1]],
                 )
             )
+
+    print(type(b[frame][0][0]))
+    print(
+        f"right_hand:\n{b[frame][:21,:]}\n"
+        + f"left_hand:\n{b[frame][21:42,:]}\n"
+        + f"body:\n{b[frame][42:54,:]}\n"
+        + f"face:\n{b[frame][54:,:]}\n"
+    )
 
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
@@ -174,6 +138,75 @@ def main():
     ani.save(args.gif_dir / (args.cache_dir.name[:-4] + ".gif"))
 
     plt.show()
+
+
+def plot_notime(b):
+    new_b = []
+
+    def gaussian(x, mu, sig):
+        return (
+            1.0
+            / (np.sqrt(2.0 * np.pi * sig))
+            * np.exp(-np.power((x - mu), 2.0) / (2 * sig))
+        )
+
+    for point in range(len(b[-1])):
+        x, y, z = [], [], []
+
+        for frame in range(len(b)):
+            x.append(b[frame][point][0] if b[frame][point][0] else 0)
+            y.append(b[frame][point][1] if b[frame][point][1] else 0)
+            z.append(b[frame][point][2] if b[frame][point][2] else 0)
+
+        x = np.array(x)
+        y = np.array(y)
+        z = np.array(z)
+
+        gauss = []
+        for frame in range(1, len(b) + 1):
+            gauss.append(gaussian(frame - 26 / 2, 0, 1))
+
+        gauss = np.array(gauss)
+
+        x = x @ gauss
+        y = y @ gauss
+        z = z @ gauss
+
+        new_b.append([x, y, z])
+
+    new_b = np.array(new_b)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d")
+
+    for start, stop in LINES:
+        ax.plot(
+            [new_b[start][0], new_b[stop][0]],
+            [new_b[start][2], new_b[stop][2]],
+            [new_b[start][1], new_b[stop][1]],
+        )
+
+    ax.plot(0, 0, 0, "o", c="r")
+    ax.text(0, 0, 0, "origo")
+
+    print(new_b.shape)
+
+    plt.show()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--cache_dir", default="Sign_cache\Ã…TTA@num_1.pose.npz", type=Path
+    )
+    parser.add_argument("--gif_dir", default="./Sign_gif", type=Path)
+    args = parser.parse_args()
+
+    b = np.load(args.cache_dir)["pose"]
+
+    plot_animated(b, args)
+
+    # plot_notime(b)
 
 
 if __name__ == "__main__":

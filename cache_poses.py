@@ -21,7 +21,12 @@ from pathlib import Path
 
 import numpy as np
 
+import logging
 import os
+
+from math import floor, ceil
+
+logger = logging.getLogger(__name__)
 
 # Reuse the same slicing constants and helper from the dataset module.
 _LEFT_HAND_SLICE = slice(501, 522)
@@ -74,6 +79,7 @@ def cache_one(pose_path: Path, cache_path: Path) -> bool:
     try:
         with open(pose_path, "rb") as f:
             pose = Pose.read(f.read())
+
         pose.normalize()
 
         data = pose.body.data  # (T, 1, J, 3) masked
@@ -97,16 +103,35 @@ def cache_one(pose_path: Path, cache_path: Path) -> bool:
         for frame in range(len(data_3d)):
             for point in right_hand[frame]:
                 point = point + body[frame][5] - right_hand[frame][0]
-                tot[frame].append([point[0], point[2] * 100, -point[1]])
+                tot[frame].append([point[0], -point[1], point[2] * 50])
             for point in left_hand[frame]:
                 point = point + body[frame][4] - left_hand[frame][0]
-                tot[frame].append([point[0], point[2] * 100, -point[1]])
+                tot[frame].append([point[0], -point[1], point[2] * 50])
             for point in body[frame]:
-                tot[frame].append([point[0], point[2] * 100, -point[1]])
+                tot[frame].append([point[0], -point[1], point[2] * 50])
             for point in face[frame]:
-                tot[frame].append([point[0], point[2] * 100, -point[1]])
+                tot[frame].append([point[0], -point[1], point[2] * 100])
 
         pose = np.array(tot)
+
+        pre = len(pose)
+
+        if len(pose) > 25:
+            if (offset := len(pose) - 25) % 2 == 0:
+                start = int(offset / 2)
+                stop = int(offset / 2)
+            else:
+                start = floor(offset / 2)
+                stop = ceil(offset / 2)
+
+            pose = pose[start:-stop, :, :]
+            logger.info(f"Truncated {pose_path.name} from {pre} -> 25 frames")
+        elif len(pose) < 25:
+            logger.info(f"Padded {pose_path.name} from {pre} -> 25 frames")
+
+        pose = np.resize(pose, (25, 79, 3))
+        pose = np.nan_to_num(pose)
+        pose = pose.reshape(pose.shape[0], 79 * 3)
 
         np.savez_compressed(cache_path, pose=pose)
         return True
@@ -117,6 +142,7 @@ def cache_one(pose_path: Path, cache_path: Path) -> bool:
 
 
 def main():
+    logging.basicConfig(filename="cacher.log", level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("--pose_dir", default="./Sign_pose", type=Path)
     parser.add_argument("--cache_dir", default="./Sign_cache", type=Path)
@@ -128,6 +154,7 @@ def main():
     args = parser.parse_args()
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
+
 
     pose_files = sorted(args.pose_dir.iterdir())
     print(f"Found {len(pose_files)} .pose files in {args.pose_dir}")
