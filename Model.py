@@ -14,10 +14,10 @@ from torch.utils.data import random_split
 
 
 class SignSpottingModel(nn.Module):
-    def __init__(self, input_size=237, hidden_size=32, num_layers=3, num_classes=100):
+    def __init__(self, input_size=237, hidden_size=32, num_layers=3, num_classes=140):
         super(SignSpottingModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.3)
-        self.dropout = nn.Dropout(0.3)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)
+        self.dropout = nn.Dropout(0.5)
         self.fc1 = nn.Linear(hidden_size, 64)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(64, num_classes)
@@ -78,8 +78,8 @@ def main():
 
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)  
+    train_loader = DataLoader(train_dataset, batch_size=200, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=40, shuffle=False)  
 
     print("Done loading data")
 
@@ -87,16 +87,16 @@ def main():
 
     model = SignSpottingModel()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
 
-    num_epochs = 100
+    epoch = 0
 
     best_val_loss = float('inf')
 
-    patience = 10
+    patience = 40
     counter = 0
 
-    for epoch in range(num_epochs):
+    while True:
         #Training
         model.train()
         train_loss = 0
@@ -131,10 +131,6 @@ def main():
 
         val_accuracy = correct / total
 
-        print(f"Epoch {epoch}")
-        print(f"Train Loss: {train_loss:.4f}")
-        print(f"Val Loss: {val_loss:.4f}")
-        print(f"Val Accuracy: {val_accuracy:.4f}")
 
 
         if val_loss < best_val_loss:
@@ -144,9 +140,16 @@ def main():
         else:
             counter += 1
 
+        print(f"Epoch {epoch}\t{counter}/{patience}")
+        print(f"Train Loss: {train_loss:.4f}")
+        print(f"Val Loss: {val_loss:.4f}")
+        print(f"Val Accuracy: {val_accuracy:.4f}")
+
         if counter >= patience:
             print("Early stopping")
             break
+
+        epoch += 1
         
     print(best_val_loss)
 
