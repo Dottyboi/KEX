@@ -77,6 +77,8 @@ def main():
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
 
+
+    #Splitta med avsikt på tecknare
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     train_loader = DataLoader(train_dataset, batch_size=250, shuffle=True)

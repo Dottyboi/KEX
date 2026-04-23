@@ -268,6 +268,8 @@ def main() -> None:
         i = 1
 
         for sign in signs:
+            if i > 17: break
+
 
             process = (
                 ffmpeg
@@ -307,7 +309,6 @@ def main() -> None:
         wait_list.append((process.run_async(pipe_stdout=False), sign))
 
     while wait_list:
-
         for process, sign in wait_list:
             poll = process.poll()
 
