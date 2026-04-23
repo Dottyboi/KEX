@@ -14,7 +14,7 @@ from torch.utils.data import random_split
 
 
 class SignSpottingModel(nn.Module):
-    def __init__(self, input_size=237, hidden_size=32, num_layers=3, num_classes=140):
+    def __init__(self, input_size=237, hidden_size=32, num_layers=3, num_classes=120):
         super(SignSpottingModel, self).__init__()
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)
         self.dropout = nn.Dropout(0.5)
@@ -78,8 +78,8 @@ def main():
 
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=200, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=40, shuffle=False)  
+    train_loader = DataLoader(train_dataset, batch_size=250, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=50, shuffle=False)  
 
     print("Done loading data")
 
@@ -87,13 +87,13 @@ def main():
 
     model = SignSpottingModel()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
     epoch = 0
 
     best_val_loss = float('inf')
 
-    patience = 40
+    patience = 100
     counter = 0
 
     while True:
