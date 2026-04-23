@@ -16,7 +16,9 @@ from torch.utils.data import random_split
 class SignSpottingModel(nn.Module):
     def __init__(self, input_size=237, hidden_size=32, num_layers=3, num_classes=120):
         super(SignSpottingModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)
+        self.lstm = nn.LSTM(
+            input_size, hidden_size, num_layers, batch_first=True, dropout=0.5
+        )
         self.dropout = nn.Dropout(0.5)
         self.fc1 = nn.Linear(hidden_size, 64)
         self.relu = nn.ReLU()
@@ -70,7 +72,6 @@ def main():
         data.append(file)
         labels.append(class_idx[file.name.split("_")[0]])
 
-
     dataset = SignDataset(data, labels)
 
     train_size = int(0.8 * len(dataset))
@@ -79,7 +80,7 @@ def main():
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     train_loader = DataLoader(train_dataset, batch_size=250, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=50, shuffle=False)  
+    val_loader = DataLoader(val_dataset, batch_size=50, shuffle=False)
 
     print("Done loading data")
 
@@ -91,13 +92,13 @@ def main():
 
     epoch = 0
 
-    best_val_loss = float('inf')
+    best_val_loss = float("inf")
 
     patience = 100
     counter = 0
 
     while True:
-        #Training
+        # Training
         model.train()
         train_loss = 0
 
@@ -111,13 +112,13 @@ def main():
 
             train_loss += loss.item()
 
-        #Validation
+        # Validation
         model.eval()
         val_loss = 0
         correct = 0
         total = 0
 
-        with torch.no_grad():  
+        with torch.no_grad():
             for x, y in val_loader:
                 outputs = model(x)
                 loss = criterion(outputs, y)
@@ -130,8 +131,6 @@ def main():
                 correct += (predicted == y).sum().item()
 
         val_accuracy = correct / total
-
-
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -150,7 +149,7 @@ def main():
             break
 
         epoch += 1
-        
+
     print(best_val_loss)
 
 
