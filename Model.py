@@ -97,14 +97,6 @@ def main():
     patience = 100
     counter = 0
 
-    plt.ion()  # turn on interactive mode
-    fig, ax = plt.subplots()
-
-    line, = ax.plot([], [])  # empty line
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Validation Loss")
-    ax.set_title("Training Progress")
-
     losses = []
 
     while True:
@@ -154,15 +146,6 @@ def main():
         print(f"Val Loss: {val_loss:.4f}")
         print(f"Val Accuracy: {val_accuracy:.4f}")
 
-        line.set_xdata(range(len(losses)))
-        line.set_ydata(losses)
-
-        ax.relim()
-        ax.autoscale_view()
-
-        plt.draw()
-        plt.pause(0.01)
-
         if counter >= patience:
             print("Early stopping")
             break
@@ -171,8 +154,6 @@ def main():
 
     print(best_val_loss)
 
-    plt.ioff()
-    plt.show()
 
 
 if __name__ == "__main__":
